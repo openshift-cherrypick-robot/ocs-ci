@@ -73,6 +73,10 @@ def get_rp_launch_attributes():
         rp_attrs["fips"] = True
     if config.ENV_DATA.get("encryption_at_rest"):
         rp_attrs["encryption_at_rest"] = True
+    if config.RUN["skipped_on_ceph_health_ratio"] > 0:
+        rp_attrs["ceph_health_skips"] = True
+    if config.RUN["skipped_on_ceph_health_ratio"] > 0.25:
+        rp_attrs["ceph_health_skips_over_threshold"] = True
 
     return rp_attrs
 

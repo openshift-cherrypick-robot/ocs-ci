@@ -52,27 +52,33 @@ class TestFailurePropagator:
         """
         number_of_eligible_tests = config.RUN.get("number_of_tests") - 2
 
-        skipped_on_ceph_health_percent = (
-            config.RUN.get("skipped_tests_ceph_health") / number_of_eligible_tests
-        )
-        message = (
-            f"This run had {skipped_on_ceph_health_percent * 100}% of the "
-            f"tests skipped due to Ceph health not OK."
-        )
-        if skipped_on_ceph_health_percent > 0.25:
-            if config.RUN.get("skip_reason_test_found"):
-                test_name = config.RUN.get("skip_reason_test_found").get("test_name")
-                message = (
-                    message + f" The test that is likely to cause this is {test_name}"
-                )
-                squad = config.RUN.get("skip_reason_test_found").get("squad")
-                if squad:
-                    message = message + f" which is under {squad}'s responsibility"
-                    request.node.add_marker(squad)
+        if number_of_eligible_tests > 0:
+            config.RUN["skipped_on_ceph_health_ratio"] = (
+                config.RUN.get("skipped_tests_ceph_health") / number_of_eligible_tests
+            )
+            message = (
+                f"This run had {config.RUN['skipped_on_ceph_health_ratio'] * 100}% of the "
+                f"tests skipped due to Ceph health not OK."
+            )
+            if config.RUN["skipped_on_ceph_health_ratio"] > 0.25:
+                if config.RUN.get("skip_reason_test_found"):
+                    test_name = config.RUN.get("skip_reason_test_found").get(
+                        "test_name"
+                    )
+                    message = (
+                        message
+                        + f" The test that is likely to cause this is {test_name}"
+                    )
+                    squad = config.RUN.get("skip_reason_test_found").get("squad")
+                    if squad:
+                        message = message + f" which is under {squad}'s responsibility"
+                        request.node.add_marker(squad)
 
-            else:
-                message = message + " Couldn't identify the test case that caused this"
-            pytest.fail(message)
+                else:
+                    message = (
+                        message + " Couldn't identify the test case that caused this"
+                    )
+                pytest.fail(message)
 
     @pytest.mark.last
     def test_failure_propagator(self):
