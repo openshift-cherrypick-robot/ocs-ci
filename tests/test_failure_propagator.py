@@ -53,8 +53,12 @@ class TestFailurePropagator:
         number_of_eligible_tests = config.RUN.get("number_of_tests") - 2
 
         if number_of_eligible_tests > 0:
-            config.RUN["skipped_on_ceph_health_ratio"] = (
-                config.RUN.get("skipped_tests_ceph_health") / number_of_eligible_tests
+            config.RUN["skipped_on_ceph_health_ratio"] = round(
+                (
+                    config.RUN.get("skipped_tests_ceph_health")
+                    / number_of_eligible_tests
+                ),
+                1,
             )
             message = (
                 f"This run had {config.RUN['skipped_on_ceph_health_ratio'] * 100}% of the "
